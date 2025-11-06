@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HomeFit — онлайн‑фитнес дома</title>
+  <meta name="description" content="HomeFit — адаптивный сайт онлайн‑фитнеса: тренировки, питание, трекер прогресса.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  
+<header class="header">
+  <div class="container header__row">
+    <a class="logo" href="index.html" aria-label="HomeFit логотип">
+      <span class="bar" aria-hidden="true"></span>
+    </a>
+    
+      <nav class="nav" id="nav">
+        <a href="index.html" aria-current="page">Главная</a>
+        <a href="pages/assignments.html" >Задания</a>
+        <a href="pages/coursework.html" >Курсовая</a>
+        <a href="pages/contact.html">Контакты</a>
+        <a class="cta" href="#start">Начать тренировки</a>
+      </nav>
+    
+    <button class="burger" id="burger" aria-label="Открыть меню"><span></span></button>
+  </div>
+</header>
+
+  <main>
+    <section class="section">
+      <div class="container hero">
+        <div>
+          <h1>HomeFit — онлайн‑фитнес дома</h1>
+          <p>
+            HomeFit — это простой способ тренироваться дома и видеть реальный прогресс. Мы объединяем
+            короткие и понятные видеотренировки, наглядные планы питания и удобный трекер результатов.
+            Сайт нацелен на практику: меньше пустых обещаний, больше понятных шагов. Начните с 10 минут
+            в день — и уже через пару недель почувствуете разницу в осанке, самочувствии и энергии.
+          </p>
+          <div class="badges">
+            <span class="badge">Программы 10–40 мин</span>
+            <span class="badge">Без оборудования</span>
+            <span class="badge">Гибкий график</span>
+          </div>
+          <p>
+            Почему формат «дома» работает? Во‑первых, экономит время и убирает психологический барьер.
+            Во‑вторых, упражнения можно подстроить под уровень подготовки: от базовой активности до
+            интервальных комплексов. И наконец, HomeFit предлагает понятный способ отслеживать прогресс:
+            не только вес, но и повторения, качество сна и самочувствие.
+            Мы верим в мягкую дисциплину: маленькие, но регулярные действия, которые складываются
+            в устойчивую привычку. На сайте вы найдёте подробные пояснения к технике, безопасные регрессии
+            и варианты усложнения — так, чтобы каждая тренировка была посильной и приносила удовольствие.
+          </p>
+          <a class="btn" href="#programs" id="start">Подобрать программу</a>
+        </div>
+        <div class="hero__art">
+          <div class="phone">
+            <div class="phone__screen">
+              <img class="phone__img" src="./assets/progress.png" alt="Иллюстрация прогресса">
+              <div class="phone__graph">Ваш прогресс</div>
+              <div style="margin-top:6px; color:#9fb3ff">Неделя 1 → Неделя 4</div>
+              <ul style="margin:6px 0 0 18px; color:#b9c3d9">
+                <li>Отжимания: 4 → 8</li>
+                <li>Планка: 10 → 20 с</li>
+              </ul>
+              <div style="margin-top:6px; color:#9fb3ff">Неделя 4 → Неделя 8</div>
+              <ul style="margin:6px 0 0 18px; color:#b9c3d9">
+                <li>Отжимания: 8 → 12</li>
+                <li>Планка: 20 → 50 с</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid">
+        <div class="cards">
+          <article class="card">
+            <h3>Тренировки без оборудования</h3>
+            <p>Комплексы на всё тело, фокус на осанке, дыхании и устойчивости корпуса. Короткие сеты легко встраиваются в ваш день.</p>
+            <a class="btn" href="pages/assignments.html">Смотреть</a>
+          </article>
+          <article class="card">
+            <h3>Питание без фанатизма</h3>
+            <p>План на неделю, простые рецепты и гибкий подход: без запретов, с упором на белок, клетчатку и плавный дефицит.</p>
+            <a class="btn" href="pages/assignments.html">Материалы</a>
+          </article>
+          <article class="card">
+            <h3>Трекер прогресса</h3>
+            <p>Фиксируйте повторения, время, самочувствие. Смотрите тенденции и корректируйте нагрузку без перегруза.</p>
+            <a class="btn" href="pages/assignments.html">Подробнее</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="programs">
+      <div class="container">
+        <h2 style="margin:0 0 14px">Программы на выбор</h2>
+        <p style="color:var(--muted)">
+          Начните с базовой стабилизации и лёгкой аэробной нагрузки. Если в конце недели чувствуете ресурс —
+          добавьте по одному кругу. Важно: следите за техникой и дыханием, не гонитесь за количеством.
+          Мы предлагаем три стартовых ветки: «Мобилизация и Кор», «Силовая база» и «HIIT‑микро».
+        </p>
+        <div class="cards">
+          <article class="card">
+            <img src="./assets/workout.png" alt="Домашняя тренировка">
+            <h3>Мобилизация и Кор</h3>
+            <p>10–20 минут: дыхание, суставная разминка, планка, «птица‑собака», мост, лёгкие вариации приседаний у стены.</p>
+          </article>
+          <article class="card">
+            <img src="./assets/power.png" alt="Силовые упражнения">
+            <h3>Силовая база</h3>
+            <p>15–30 минут: приседания, наклоны, отжимания от опоры, тяга резинкой, статические удержания — безопасная прогрессия.</p>
+          </article>
+          <article class="card">
+            <img src="./assets/interval.png" alt="Интервальная тренировка">
+            <h3>HIIT‑микро</h3>
+            <p>12–18 минут: интервальные раунды 30/30 с базовыми движениями. Легко масштабировать по самочувствию.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  
+<footer class="footer" id="contact">
+  <div class="container footer__row">
+    <div>
+      <div class="logo" aria-hidden="true"><span class="bar"></span></div>
+      <div><small>© 2025 HomeFit. Онлайн‑тренировки с поддержкой и прогресс‑трекером.</small></div>
+    </div>
+    <div class="links">
+      <a href="pages/assignments.html">Задания</a>
+      <a href="pages/coursework.html">Курсовая</a>
+      <a href="pages/contact.html">Связаться</a>
+    </div>
+  </div>
+</footer>
+
+<script src="./script.js"></script>
+</body>
+</html>
