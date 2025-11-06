@@ -73,6 +73,7 @@ body {
   height: 30px;
   position: relative;
   display: inline-block;
+  margin-left: 15px;
 }
 
 .logo .bar {
@@ -409,7 +410,7 @@ body {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr 1fr;
-  padding: 18px 0;
+  padding: 18px 10px;
 }
 
 .footer .links {
