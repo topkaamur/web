@@ -120,6 +120,24 @@
 
 .rules-box li { margin: 6px 0; }
 
+.rules-box li.hotkey {
+  padding-left: 10px;
+  font-size: 0.85rem;
+}
+
+.rules-box kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--accent);
+  min-width: 24px;
+  text-align: center;
+}
+
 /* === Кнопки === */
 
 .btn-start {
