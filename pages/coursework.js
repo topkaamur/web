@@ -254,8 +254,9 @@
   }
 
   function renderPan(panEl, weights) {
+    const side = panEl.dataset.side;
     panEl.innerHTML = weights.map(w => `<div class="pan-weight" data-value="${w}">${w}</div>`).join('');
-    panEl.querySelectorAll('.pan-weight').forEach(w => makeDraggable(w, panEl.dataset.side));
+    panEl.querySelectorAll('.pan-weight').forEach(w => makeDraggable(w, side));
   }
 
   function renderShelf() {
@@ -270,10 +271,84 @@
     });
   }
 
+  // === Выделение гирьки (для клавиатуры) ===
+
+  let selected = { el: null, from: null, value: null };
+
+  function selectWeight(element, from) {
+    if (!S.playing) return;
+    clearSelection();
+    selected.el = element;
+    selected.from = from;
+    selected.value = parseInt(element.dataset.value);
+    element.classList.add('selected');
+    toast(`Гирька ${selected.value} — A/D/W`, 'info', 1200);
+  }
+
+  function selectFallingWeight(element) {
+    if (!S.playing) return;
+    clearSelection();
+    selected.el = element;
+    selected.from = 'falling';
+    selected.value = parseInt(element.dataset.value);
+    element.classList.add('selected');
+    toast(`Поймана ${selected.value} — A/D/W`, 'success', 1200);
+  }
+
+  function clearSelection() {
+    if (selected.el) selected.el.classList.remove('selected');
+    selected = { el: null, from: null, value: null };
+  }
+
+  function moveSelectedTo(target) {
+    if (!selected.el || !S.playing) return;
+
+    // Проверяем лимиты
+    if (target === 'left' && S.leftW.length >= CFG.panMax) {
+      toast('⚖️ Левая чаша полная!', 'error', 1000);
+      return;
+    }
+    if (target === 'right' && S.rightW.length >= CFG.panMax) {
+      toast('⚖️ Правая чаша полная!', 'error', 1000);
+      return;
+    }
+    if (target === 'shelf' && S.shelfW.length >= CFG.shelfMax) {
+      toast('📦 Полка заполнена!', 'error', 1000);
+      return;
+    }
+    if (target === selected.from) return;
+
+    // Удаляем из источника
+    if (selected.from === 'falling') {
+      // Падающая гирька — удаляем DOM элемент
+      if (selected.el && selected.el.parentNode) {
+        selected.el.remove();
+      }
+    } else {
+      const arr = selected.from === 'left' ? S.leftW : selected.from === 'right' ? S.rightW : S.shelfW;
+      const i = arr.indexOf(selected.value);
+      if (i > -1) arr.splice(i, 1);
+    }
+
+    // Добавляем в цель
+    if (target === 'left') S.leftW.push(selected.value);
+    else if (target === 'right') S.rightW.push(selected.value);
+    else S.shelfW.push(selected.value);
+
+    clearSelection();
+    renderPan(el.panLeft, S.leftW);
+    renderPan(el.panRight, S.rightW);
+    renderShelf();
+    updateScale();
+  }
+
   // === Drag & Drop ===
 
   let ghost = null;
   let dragData = { value: null, from: null, el: null };
+  let dragStartPos = null;
+  let isDragging = false;
+  const DRAG_THRESHOLD = 5;
 
   function makeDraggable(element, from) {
     element.addEventListener('touchstart', e => startDrag(e, element, from), { passive: false });
@@ -282,24 +357,14 @@
 
   function startDrag(e, element, from) {
     e.preventDefault();
+    
+    const pos = e.touches ? e.touches[0] : e;
+    dragStartPos = { x: pos.clientX, y: pos.clientY };
+    isDragging = false;
+    
     dragData.value = parseInt(element.dataset.value);
     dragData.from = from;
     dragData.el = element;
-    element.style.opacity = '0.4';
-
-    ghost = document.createElement('div');
-    ghost.className = 'weight-ghost';
-    ghost.textContent = dragData.value;
-    document.body.appendChild(ghost);
-
-    const pos = e.touches ? e.touches[0] : e;
-    moveGhost(pos.clientX, pos.clientY);
-
-    if (S.leftW.length < CFG.panMax) el.panLeft.classList.add('drag-over');
-    if (S.rightW.length < CFG.panMax) el.panRight.classList.add('drag-over');
-    if (S.shelfW.length < CFG.shelfMax && dragData.from !== 'shelf') {
-      el.shelf.classList.add('drag-over');
-    }
 
     if (e.touches) {
       document.addEventListener('touchmove', onMove, { passive: false });
@@ -310,9 +375,39 @@
     }
   }
 
+  function beginActualDrag() {
+    if (isDragging) return;
+    isDragging = true;
+    
+    dragData.el.style.opacity = '0.4';
+    
+    ghost = document.createElement('div');
+    ghost.className = 'weight-ghost';
+    ghost.textContent = dragData.value;
+    document.body.appendChild(ghost);
+
+    if (S.leftW.length < CFG.panMax) el.panLeft.classList.add('drag-over');
+    if (S.rightW.length < CFG.panMax) el.panRight.classList.add('drag-over');
+    if (S.shelfW.length < CFG.shelfMax && dragData.from !== 'shelf') {
+      el.shelf.classList.add('drag-over');
+    }
+  }
+
   function onMove(e) {
     e.preventDefault();
     const pos = e.touches ? e.touches[0] : e;
+    
+    // Проверяем порог для начала перетаскивания
+    if (!isDragging && dragStartPos) {
+      const dx = pos.clientX - dragStartPos.x;
+      const dy = pos.clientY - dragStartPos.y;
+      if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) {
+        beginActualDrag();
+      }
+    }
+    
+    if (!isDragging) return;
+    
     moveGhost(pos.clientX, pos.clientY);
 
     const shelfFull = S.shelfW.length >= CFG.shelfMax;
@@ -333,6 +428,20 @@
 
   function onEnd(e) {
     const pos = e.changedTouches ? e.changedTouches[0] : e;
+    
+    // Если не было перетаскивания — это клик для выделения
+    if (!isDragging && dragData.el) {
+      if (dragData.from === 'falling') {
+        // Падающая гирька поймана — выделяем её
+        selectFallingWeight(dragData.el);
+      } else {
+        // Гирька на весах/полке — выделяем
+        selectWeight(dragData.el, dragData.from);
+      }
+      cleanupDrag();
+      return;
+    }
+    
     let target = null;
     let dropFailed = false;
 
@@ -375,13 +484,20 @@
       resumeFalling(dragData.el);
     }
 
+    cleanupDrag();
+  }
+  
+  function cleanupDrag() {
     if (dragData.el && dragData.from !== 'falling') dragData.el.style.opacity = '1';
     if (ghost) { ghost.remove(); ghost = null; }
 
     el.panLeft.classList.remove('drag-over', 'pan-full');
     el.panRight.classList.remove('drag-over', 'pan-full');
     el.shelf.classList.remove('drag-over', 'shelf-full');
+    
     dragData = { value: null, from: null, el: null };
+    dragStartPos = null;
+    isDragging = false;
 
     document.removeEventListener('touchmove', onMove);
     document.removeEventListener('touchend', onEnd);
@@ -819,6 +935,45 @@
 
     el.nameInput.addEventListener('keydown', e => {
       if (e.key === 'Enter') startGame();
+    });
+
+    // Горячие клавиши
+    document.addEventListener('keydown', e => {
+      // Только на экране игры
+      const gameScreen = document.getElementById('game-screen');
+      if (!gameScreen || !gameScreen.classList.contains('active')) return;
+      if (document.activeElement.tagName === 'INPUT') return;
+
+      const key = e.key.toLowerCase();
+      
+      if (key === 'a' || key === 'ф') {
+        e.preventDefault();
+        if (selected.el) moveSelectedTo('left');
+        else toast('Сначала кликни на гирьку', 'info', 1000);
+      } else if (key === 'd' || key === 'в') {
+        e.preventDefault();
+        if (selected.el) moveSelectedTo('right');
+        else toast('Сначала кликни на гирьку', 'info', 1000);
+      } else if (key === 'w' || key === 'ц') {
+        e.preventDefault();
+        if (selected.el) moveSelectedTo('shelf');
+        else toast('Сначала кликни на гирьку', 'info', 1000);
+      } else if (key === ' ') {
+        e.preventDefault();
+        if (S.playing && !el.btnCheck.disabled) checkBalance();
+      } else if (key === 'escape') {
+        e.preventDefault();
+        clearSelection();
+      }
+    });
+
+    // Снять выделение при клике на пустое место (не на гирьку)
+    el.gameArea.addEventListener('click', e => {
+      if (!e.target.classList.contains('pan-weight') && 
+          !e.target.classList.contains('shelf-weight') &&
+          !e.target.classList.contains('falling-weight')) {
+        clearSelection();
+      }
     });
 
     updateSplashHistory();

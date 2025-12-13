@@ -763,6 +763,22 @@
 
 .shake { animation: shake 0.25s ease; }
 
+/* === Выделенная гирька === */
+
+.pan-weight.selected,
+.shelf-weight.selected,
+.falling-weight.selected {
+  box-shadow: 0 0 0 3px var(--accent), 0 0 15px rgba(34, 211, 238, 0.5);
+  transform: scale(1.15);
+  z-index: 100;
+  animation: selectedPulse 0.8s ease infinite;
+}
+
+@keyframes selectedPulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--accent), 0 0 15px rgba(34, 211, 238, 0.5); }
+  50% { box-shadow: 0 0 0 4px var(--accent), 0 0 20px rgba(34, 211, 238, 0.7); }
+}
+
 /* === Адаптив === */
 
 @media (max-width: 380px) {
