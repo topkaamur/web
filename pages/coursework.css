@@ -1,0 +1,774 @@
+/* Игра "Определи вес" - Стили */
+
+* { touch-action: manipulation; }
+
+.game-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.game-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+}
+
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 500px;
+  animation: fadeIn 0.4s ease;
+}
+
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Стартовый экран === */
+
+.splash-card {
+  background: linear-gradient(180deg, var(--card) 0%, #0e1628 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 30px 25px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, .4);
+}
+
+.splash-card h1 {
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, var(--accent), var(--lime));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.splash-card .subtitle {
+  color: var(--muted);
+  font-size: 1rem;
+  margin-bottom: 25px;
+}
+
+.scale-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+  animation: swing 2s ease-in-out infinite;
+}
+
+@keyframes swing {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.input-group {
+  margin: 20px 0;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.input-group input {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px 18px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  font-size: 1.1rem;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.rules-box {
+  background: rgba(0,0,0,0.2);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.rules-box h3 {
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.rules-box ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rules-box li { margin: 6px 0; }
+
+/* === Кнопки === */
+
+.btn-start {
+  width: 100%;
+  max-width: 280px;
+  padding: 16px 30px;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--accent), var(--lime));
+  color: #04121d;
+  font-weight: 700;
+  transition: 0.3s;
+  margin-top: 10px;
+}
+
+.btn-start:hover { transform: translateY(-2px); }
+.btn-start:active { transform: scale(0.98); }
+
+.btn-secondary {
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary:hover { border-color: var(--accent); }
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.btn-group .btn-start {
+  width: 100%;
+  max-width: none;
+}
+
+/* === Игровой HUD === */
+
+.game-hud {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: linear-gradient(180deg, var(--card) 0%, transparent 100%);
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.hud-item { text-align: center; }
+
+.hud-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.hud-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.hud-value.score { color: var(--lime); }
+.hud-value.time { color: var(--accent); }
+.hud-value.time.warning { color: #f59e0b; }
+.hud-value.time.danger { color: #ef4444; animation: pulse 0.5s infinite; }
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* === Таймер === */
+
+.time-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.time-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--lime));
+  transition: width 0.1s linear;
+}
+
+.time-bar-fill.warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.time-bar-fill.danger { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* === Индикатор раундов === */
+
+.round-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.round-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.round-dot.done { background: var(--lime); }
+.round-dot.current { background: var(--accent); animation: pulse 1s infinite; }
+.round-dot.failed { background: #ef4444; }
+
+/* === Игровая область === */
+
+.game-area {
+  background: linear-gradient(180deg, #0a1628 0%, #0f172a 100%);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  height: 480px;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.fall-zone {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  height: 180px;
+  pointer-events: none;
+}
+
+/* === Падающие гирьки === */
+
+.falling-weight {
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.5);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto;
+  transition: transform 0.1s;
+  z-index: 10;
+}
+
+.falling-weight.caught {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 3px var(--accent), 0 8px 25px rgba(34, 211, 238, 0.4);
+  z-index: 100;
+}
+
+@keyframes fall {
+  from { top: -60px; }
+  to { top: 200px; }
+}
+
+@keyframes fallResume {
+  to { top: 200px; }
+}
+
+@keyframes flyAway {
+  to { opacity: 0; transform: scale(0.3) translateY(30px); }
+}
+
+/* === Полка === */
+
+.shelf {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 8px 15px;
+  background: rgba(30, 41, 59, 0.9);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  min-width: 180px;
+  min-height: 55px;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.shelf-label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.shelf.drag-over {
+  border-color: var(--accent);
+  background: rgba(34, 211, 238, 0.1);
+}
+
+.shelf.shelf-full {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.shelf.shake {
+  animation: shakeShelf 0.3s ease;
+}
+
+@keyframes shakeShelf {
+  0%, 100% { transform: translateX(-50%); }
+  25% { transform: translateX(calc(-50% - 8px)); }
+  75% { transform: translateX(calc(-50% + 8px)); }
+}
+
+.shelf-weight {
+  width: 45px;
+  height: 45px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  box-shadow: 0 3px 10px rgba(251, 191, 36, 0.4);
+  cursor: grab;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.5); }
+  to { transform: scale(1); }
+}
+
+/* === Весы === */
+
+.scale-area {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 340px;
+  height: 160px;
+}
+
+.fulcrum {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 30px solid #4b5563;
+}
+
+.scale-beam {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 8px;
+  background: linear-gradient(90deg, #4b5563, #6b7280, #4b5563);
+  border-radius: 4px;
+  transform-origin: center center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pan-zone {
+  position: absolute;
+  bottom: 33px;
+  width: 46%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pan-zone.left { left: 0; }
+.pan-zone.right { right: 0; }
+
+.pan-rope {
+  width: 2px;
+  height: 25px;
+  background: #6b7280;
+}
+
+.pan {
+  width: 100%;
+  max-width: 110px;
+  min-height: 70px;
+  background: rgba(107, 114, 128, 0.2);
+  border: 2px dashed #4b5563;
+  border-radius: 0 0 50% 50% / 0 0 30% 30%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 4px;
+  padding: 6px;
+  transition: 0.2s;
+}
+
+.pan.drag-over {
+  border-color: var(--lime);
+  background: rgba(132, 204, 22, 0.15);
+  box-shadow: 0 0 15px rgba(132, 204, 22, 0.2);
+}
+
+.pan.pan-full {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.pan.shake-pan {
+  animation: shakePan 0.3s ease;
+}
+
+@keyframes shakePan {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.pan-weight {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  cursor: grab;
+  animation: dropIn 0.25s ease;
+}
+
+@keyframes dropIn {
+  from { transform: translateY(-20px) scale(0.5); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.pan-total {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 6px;
+}
+
+/* === Призрак при перетаскивании === */
+
+.weight-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+  width: 58px;
+  height: 58px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  box-shadow: 0 8px 30px rgba(251, 191, 36, 0.6);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* === Кнопки игры === */
+
+.game-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.btn-check {
+  flex: 1;
+  padding: 14px;
+  background: linear-gradient(90deg, var(--lime), #65a30d);
+  border: none;
+  border-radius: 12px;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-check:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-check:not(:disabled):active { transform: scale(0.98); }
+
+.btn-skip {
+  padding: 14px 18px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 12px;
+  color: #f87171;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* === Сообщения === */
+
+.game-msg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(15, 23, 42, 0.98);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  padding: 25px 35px;
+  text-align: center;
+  z-index: 200;
+  animation: popUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popUp {
+  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.game-msg.success { border-color: var(--lime); }
+.game-msg.fail { border-color: #ef4444; }
+.game-msg h2 { margin: 0 0 8px; font-size: 1.4rem; }
+.game-msg.success h2 { color: var(--lime); }
+.game-msg.fail h2 { color: #ef4444; }
+.game-msg p { color: var(--muted); margin: 0; font-size: 0.9rem; }
+.game-msg .pts { font-size: 1.2rem; font-weight: 700; margin-top: 8px; }
+.game-msg .pts.plus { color: var(--lime); }
+.game-msg .pts.minus { color: #ef4444; }
+
+/* === Оверлей уровня === */
+
+.level-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.level-card {
+  text-align: center;
+  max-width: 280px;
+}
+
+.level-card h2 {
+  color: var(--lime);
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+}
+
+.level-card .stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.level-card .stat {
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.level-card .stat-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.level-card .stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.level-card p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+/* === Экран результатов === */
+
+.results-card {
+  background: linear-gradient(180deg, var(--card) 0%, #0e1628 100%);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 30px 25px;
+  text-align: center;
+}
+
+.results-card h1 { font-size: 1.7rem; margin-bottom: 8px; }
+.results-card h1.win { color: var(--lime); }
+.results-card h1.lose { color: #ef4444; }
+
+.final-score {
+  font-size: 3.2rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, var(--accent), var(--lime));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 12px 0;
+}
+
+.results-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 18px 0;
+}
+
+.results-stat { text-align: center; }
+.results-stat-value { font-size: 1.4rem; font-weight: 700; }
+.results-stat-label { font-size: 0.7rem; color: var(--muted); }
+
+/* === История === */
+
+.history-box {
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 18px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.history-box h3 {
+  color: var(--accent);
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.history-list { list-style: none; padding: 0; margin: 0; }
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+  margin: 5px 0;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.history-item.current {
+  background: rgba(34, 211, 238, 0.15);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+}
+
+.history-emoji { font-size: 1.1rem; }
+.history-info { flex: 1; text-align: left; }
+.history-name { font-weight: 600; }
+.history-details { font-size: 0.65rem; color: var(--muted); }
+.history-right { text-align: right; }
+.history-score { font-weight: 700; color: var(--lime); }
+.history-date { font-size: 0.6rem; color: var(--muted); }
+
+.btn-clear {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.5;
+}
+
+.btn-clear:hover { opacity: 1; }
+
+/* === Тост-уведомления === */
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 18px;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  z-index: 1000;
+  opacity: 0;
+  transition: 0.3s;
+  pointer-events: none;
+}
+
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--lime); }
+.toast.error { border-color: #ef4444; }
+
+/* === Анимации === */
+
+@keyframes shake {
+  0%, 100% { transform: translateX(-50%) rotate(0); }
+  25% { transform: translateX(-50%) rotate(-2deg); }
+  75% { transform: translateX(-50%) rotate(2deg); }
+}
+
+.shake { animation: shake 0.25s ease; }
+
+/* === Адаптив === */
+
+@media (max-width: 380px) {
+  .game-area { height: 440px; }
+  .falling-weight { width: 46px; height: 46px; font-size: 0.9rem; }
+  .shelf-weight { width: 40px; height: 40px; font-size: 0.85rem; }
+  .pan-weight { width: 32px; height: 32px; font-size: 0.75rem; }
+  .pan { min-height: 60px; }
+}
