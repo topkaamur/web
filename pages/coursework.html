@@ -3,54 +3,2062 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HomeFit — Курсовая</title>
+  <title>HomeFit — Определи вес</title>
   <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* ===== GAME STYLES ===== */
+    .game-wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .game-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* Screen transitions */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 900px;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== SPLASH SCREEN ===== */
+    .splash-card {
+      background: linear-gradient(180deg, var(--card) 0%, #0e1628 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+    }
+
+    .splash-card h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, var(--accent), var(--lime));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .splash-card .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 30px;
+    }
+
+    .scale-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: scaleSwing 2s ease-in-out infinite;
+    }
+
+    @keyframes scaleSwing {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    .input-group {
+      margin: 25px 0;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .input-group input {
+      width: 100%;
+      max-width: 300px;
+      padding: 14px 18px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.3);
+      color: var(--text);
+      font-size: 1.1rem;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+    }
+
+    .rules-box {
+      background: rgba(0,0,0,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 25px 0;
+      text-align: left;
+    }
+
+    .rules-box h3 {
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rules-box ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .rules-box li {
+      margin: 8px 0;
+    }
+
+    .rules-box .key {
+      display: inline-block;
+      padding: 3px 8px;
+      background: var(--border);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    .btn-start {
+      padding: 16px 50px;
+      font-size: 1.2rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 14px;
+      background: linear-gradient(90deg, var(--accent), var(--lime));
+      color: #04121d;
+      font-weight: 700;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    .btn-start:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(34, 211, 238, 0.3);
+    }
+
+    .btn-start:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ===== GAME SCREEN ===== */
+    .game-screen {
+      position: relative;
+    }
+
+    .game-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 25px;
+      background: linear-gradient(180deg, var(--card) 0%, transparent 100%);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .hud-item {
+      text-align: center;
+    }
+
+    .hud-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .hud-value.score {
+      color: var(--lime);
+    }
+
+    .hud-value.time {
+      color: var(--accent);
+    }
+
+    .hud-value.time.warning {
+      color: #f59e0b;
+      animation: pulse 0.5s ease infinite;
+    }
+
+    .hud-value.time.danger {
+      color: #ef4444;
+      animation: pulse 0.3s ease infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .game-area {
+      position: relative;
+      height: 500px;
+      background: linear-gradient(180deg, #0a1628 0%, #0f172a 100%);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    /* Falling weight zone */
+    .falling-zone {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 150px;
+      border-bottom: 2px dashed rgba(34, 211, 238, 0.3);
+    }
+
+    .falling-weight {
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4), inset 0 -4px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+      z-index: 10;
+    }
+
+    .falling-weight:hover {
+      box-shadow: 0 8px 35px rgba(251, 191, 36, 0.6), inset 0 -4px 10px rgba(0,0,0,0.2);
+    }
+
+    .falling-weight.selected {
+      transform: translateX(-50%) scale(1.15);
+      box-shadow: 0 0 0 4px var(--accent), 0 8px 35px rgba(34, 211, 238, 0.5);
+    }
+
+    @keyframes fall {
+      from { top: -80px; }
+      to { top: 160px; }
+    }
+
+    @keyframes flyAway {
+      0% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(50px) scale(0.3); }
+    }
+
+    /* Scale base */
+    .scale-wrapper {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 400px;
+    }
+
+    .scale-base {
+      position: relative;
+      height: 200px;
+    }
+
+    /* Fulcrum (треугольник) */
+    .fulcrum {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 25px solid transparent;
+      border-right: 25px solid transparent;
+      border-bottom: 40px solid #374151;
+    }
+
+    /* Scale beam (коромысло) */
+    .scale-beam {
+      position: absolute;
+      bottom: 35px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 350px;
+      height: 12px;
+      background: linear-gradient(90deg, #4b5563, #6b7280, #4b5563);
+      border-radius: 6px;
+      transform-origin: center center;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    /* Pan containers */
+    .pan-container {
+      position: absolute;
+      bottom: 47px;
+      width: 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .pan-container.left {
+      left: calc(50% - 175px);
+      transform-origin: top center;
+    }
+
+    .pan-container.right {
+      left: calc(50% + 55px);
+      transform-origin: top center;
+    }
+
+    .pan-rope {
+      width: 3px;
+      height: 50px;
+      background: linear-gradient(180deg, #6b7280, #9ca3af);
+    }
+
+    .pan {
+      width: 120px;
+      height: 25px;
+      background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+      border-radius: 0 0 60px 60px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      position: relative;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .pan:hover {
+      box-shadow: 0 0 0 3px var(--accent), 0 8px 20px rgba(34, 211, 238, 0.3);
+    }
+
+    .pan.highlight {
+      box-shadow: 0 0 0 3px var(--lime), 0 8px 25px rgba(132, 204, 22, 0.4);
+    }
+
+    .pan-weights {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      padding: 5px;
+      max-width: 130px;
+    }
+
+    .pan-weight {
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      box-shadow: 0 4px 10px rgba(251, 191, 36, 0.3);
+      animation: dropIn 0.3s ease;
+    }
+
+    @keyframes dropIn {
+      from { transform: translateY(-30px) scale(0.5); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .pan-total {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Table (стол для гирек) */
+    .table-area {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 150px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+    }
+
+    .table-title {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .table-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .table-slot {
+      aspect-ratio: 1;
+      background: rgba(0,0,0,0.3);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .table-slot:hover {
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.1);
+    }
+
+    .table-slot.highlight {
+      border-color: var(--lime);
+      background: rgba(132, 204, 22, 0.15);
+    }
+
+    .table-slot.occupied {
+      border-style: solid;
+    }
+
+    .table-weight {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      cursor: grab;
+      transition: 0.2s;
+    }
+
+    .table-weight:hover {
+      transform: scale(1.1);
+    }
+
+    .table-weight.dragging {
+      opacity: 0.5;
+    }
+
+    /* Control hints */
+    .controls-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .controls-hint div {
+      margin: 4px 0;
+    }
+
+    .controls-hint .key {
+      display: inline-block;
+      padding: 2px 6px;
+      background: var(--border);
+      border-radius: 4px;
+      font-family: monospace;
+      color: var(--text);
+      margin-right: 5px;
+    }
+
+    /* Confirm button */
+    .btn-confirm {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: linear-gradient(90deg, var(--lime), #65a30d);
+      border: none;
+      border-radius: 10px;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(132, 204, 22, 0.3);
+    }
+
+    .btn-confirm:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Skip level button */
+    .btn-skip {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      border-radius: 10px;
+      color: #ef4444;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-skip:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Messages */
+    .game-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      padding: 30px 50px;
+      text-align: center;
+      z-index: 100;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    .game-message.success {
+      border-color: var(--lime);
+    }
+
+    .game-message.failure {
+      border-color: #ef4444;
+    }
+
+    .game-message h2 {
+      margin: 0 0 10px;
+      font-size: 1.8rem;
+    }
+
+    .game-message.success h2 {
+      color: var(--lime);
+    }
+
+    .game-message.failure h2 {
+      color: #ef4444;
+    }
+
+    .game-message p {
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .game-message .points {
+      font-size: 1.3rem;
+      color: var(--lime);
+      font-weight: 700;
+      margin-top: 10px;
+    }
+
+    .game-message .points.negative {
+      color: #ef4444;
+    }
+
+    /* Level complete overlay */
+    .level-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .level-card {
+      background: var(--card);
+      border: 2px solid var(--lime);
+      border-radius: 24px;
+      padding: 40px 60px;
+      text-align: center;
+    }
+
+    .level-card h2 {
+      color: var(--lime);
+      font-size: 2rem;
+      margin-bottom: 15px;
+    }
+
+    .level-card .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .level-card .stat {
+      background: rgba(0,0,0,0.2);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .level-card .stat-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .level-card .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .level-card .btn-start {
+      margin-top: 20px;
+    }
+
+    /* ===== RESULTS SCREEN ===== */
+    .results-card {
+      background: linear-gradient(180deg, var(--card) 0%, #0e1628 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+    }
+
+    .results-card h1 {
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    .results-card h1.win {
+      color: var(--lime);
+    }
+
+    .results-card h1.lose {
+      color: #ef4444;
+    }
+
+    .final-score {
+      font-size: 4rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent), var(--lime));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 20px 0;
+    }
+
+    .results-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin: 25px 0;
+      flex-wrap: wrap;
+    }
+
+    .results-stat {
+      text-align: center;
+    }
+
+    .results-stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .results-stat-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+      background: rgba(0,0,0,0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 25px 0;
+    }
+
+    .leaderboard h3 {
+      color: var(--accent);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .leaderboard-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 10px;
+      margin: 8px 0;
+      transition: 0.2s;
+    }
+
+    .leaderboard-item.current {
+      background: rgba(34, 211, 238, 0.15);
+      border: 1px solid var(--accent);
+    }
+
+    .leaderboard-item:hover {
+      background: rgba(30, 41, 59, 0.8);
+    }
+
+    .leaderboard-rank {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      margin-right: 15px;
+    }
+
+    .leaderboard-rank.gold {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1a1a2e;
+    }
+
+    .leaderboard-rank.silver {
+      background: linear-gradient(135deg, #9ca3af, #6b7280);
+      color: #1a1a2e;
+    }
+
+    .leaderboard-rank.bronze {
+      background: linear-gradient(135deg, #cd7f32, #a0522d);
+      color: #1a1a2e;
+    }
+
+    .leaderboard-name {
+      flex: 1;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .leaderboard-score {
+      font-weight: 700;
+      color: var(--lime);
+    }
+
+    .leaderboard-date {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-left: 15px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .btn-secondary {
+      padding: 14px 30px;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.1);
+    }
+
+    /* Round indicator */
+    .round-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .round-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: 0.3s;
+    }
+
+    .round-dot.completed {
+      background: var(--lime);
+    }
+
+    .round-dot.current {
+      background: var(--accent);
+      animation: pulse 1s infinite;
+    }
+
+    .round-dot.failed {
+      background: #ef4444;
+    }
+
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 15px 25px;
+      color: var(--text);
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transition: 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-color: var(--lime);
+    }
+
+    .toast.error {
+      border-color: #ef4444;
+    }
+
+    .toast.info {
+      border-color: var(--accent);
+    }
+
+    /* Progress bar for time */
+    .time-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .time-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--lime));
+      border-radius: 2px;
+      transition: width 0.1s linear;
+    }
+
+    .time-bar-fill.warning {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+
+    .time-bar-fill.danger {
+      background: linear-gradient(90deg, #ef4444, #f87171);
+    }
+
+    /* Shake animation */
+    @keyframes shake {
+      0%, 100% { transform: translateX(-50%) translateX(0); }
+      25% { transform: translateX(-50%) translateX(-10px); }
+      75% { transform: translateX(-50%) translateX(10px); }
+    }
+
+    .shake {
+      animation: shake 0.3s ease;
+    }
+  </style>
 </head>
 <body>
-  
-<header class="header">
-  <div class="container header__row">
-    <a class="logo" href="../index.html" aria-label="HomeFit логотип">
-      <span class="bar" aria-hidden="true"></span>
-    </a>
-    
+<div class="game-wrapper">
+  <header class="header">
+    <div class="container header__row">
+      <a class="logo" href="../index.html" aria-label="HomeFit логотип">
+        <span class="bar" aria-hidden="true"></span>
+      </a>
+      
       <nav class="nav" id="nav">
-        <a href="../index.html" >Главная</a>
-        <a href="assignments.html" >Задания</a>
+        <a href="../index.html">Главная</a>
+        <a href="assignments.html">Задания</a>
         <a href="coursework.html" aria-current="page">Курсовая</a>
         <a href="contact.html">Контакты</a>
         <a class="cta" href="assignments.html">Начать тренировки</a>
       </nav>
-    
-    <button class="burger" id="burger" aria-label="Открыть меню"><span></span></button>
-  </div>
-</header>
+      
+      <button class="burger" id="burger" aria-label="Открыть меню"><span></span></button>
+    </div>
+  </header>
 
-  <main>
-    <section class="section">
-      <div class="container">
-        <h1>Курсовая: дизайн и архитектура сайта</h1>
-        <p style="color:var(--muted)">
-          Эта страница предназначена для будущей курсовой работы.
-        </p>
+  <div class="game-container">
+    <!-- ===== SPLASH SCREEN ===== -->
+    <div class="screen active" id="splash-screen">
+      <div class="splash-card">
+        <div class="scale-icon">⚖️</div>
+        <h1>Определи вес</h1>
+        <p class="subtitle">Уравновесь весы, управляя падающими гирьками!</p>
+        
+        <div class="input-group">
+          <label for="player-name">Введите ваше имя</label>
+          <input type="text" id="player-name" placeholder="Игрок" maxlength="20" autocomplete="off">
+        </div>
+        
+        <div class="rules-box">
+          <h3>📋 Правила игры</h3>
+          <ul>
+            <li>Сверху падают гирьки с числами — ваша задача уравновесить весы</li>
+            <li>Кликните на гирьку, затем выберите куда её положить (левая/правая чаша или стол)</li>
+            <li>Со стола можно перетаскивать гирьки на весы</li>
+            <li>Когда весы уравновешены — нажмите "Проверить"</li>
+            <li>Игнорируемые гирьки улетают!</li>
+          </ul>
+          <h3 style="margin-top: 15px;">⌨️ Управление</h3>
+          <ul>
+            <li><span class="key">A</span> — положить на левую чашу</li>
+            <li><span class="key">D</span> — положить на правую чашу</li>
+            <li><span class="key">S</span> — положить на стол</li>
+            <li><span class="key">Space</span> — проверить баланс</li>
+            <li><span class="key">Двойной клик</span> — быстро на левую чашу</li>
+          </ul>
+        </div>
+        
+        <button class="btn-start" id="btn-start">🎮 Начать игру</button>
       </div>
-    </section>
-  </main>
-  
-<footer class="footer" id="contact">
-  <div class="container footer__row">
-    <div>
-      <div class="logo" aria-hidden="true"><span class="bar"></span></div>
-      <div><small>© 2025 HomeFit. Онлайн‑тренировки с поддержкой и прогресс‑трекером.</small></div>
     </div>
-    <div class="links">
-      <a href="assignments.html">Задания</a>
-      <a href="coursework.html">Курсовая</a>
-      <a href="contact.html">Связаться</a>
+
+    <!-- ===== GAME SCREEN ===== -->
+    <div class="screen" id="game-screen">
+      <div class="game-hud">
+        <div class="hud-item">
+          <div class="hud-label">Игрок</div>
+          <div class="hud-value" id="hud-player">—</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">Уровень</div>
+          <div class="hud-value" id="hud-level">1</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">Раунд</div>
+          <div class="hud-value" id="hud-round">1/5</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">Время</div>
+          <div class="hud-value time" id="hud-time">60</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">Очки</div>
+          <div class="hud-value score" id="hud-score">0</div>
+        </div>
+      </div>
+
+      <div class="round-indicator" id="round-indicator"></div>
+
+      <div class="game-area" id="game-area">
+        <div class="time-bar">
+          <div class="time-bar-fill" id="time-bar-fill"></div>
+        </div>
+
+        <button class="btn-skip" id="btn-skip">⏭️ Пропустить уровень</button>
+        <button class="btn-confirm" id="btn-confirm" disabled>✓ Проверить</button>
+
+        <div class="falling-zone" id="falling-zone"></div>
+
+        <div class="scale-wrapper">
+          <div class="scale-base">
+            <div class="scale-beam" id="scale-beam"></div>
+            
+            <div class="pan-container left" id="pan-left-container">
+              <div class="pan-rope"></div>
+              <div class="pan" id="pan-left" data-side="left">
+                <div class="pan-weights" id="pan-left-weights"></div>
+                <div class="pan-total" id="pan-left-total">0</div>
+              </div>
+            </div>
+            
+            <div class="pan-container right" id="pan-right-container">
+              <div class="pan-rope"></div>
+              <div class="pan" id="pan-right" data-side="right">
+                <div class="pan-weights" id="pan-right-weights"></div>
+                <div class="pan-total" id="pan-right-total">0</div>
+              </div>
+            </div>
+            
+            <div class="fulcrum"></div>
+          </div>
+        </div>
+
+        <div class="table-area" id="table-area">
+          <div class="table-title">📦 Стол (6 мест)</div>
+          <div class="table-slots" id="table-slots"></div>
+        </div>
+
+        <div class="controls-hint">
+          <div><span class="key">A</span> Левая</div>
+          <div><span class="key">D</span> Правая</div>
+          <div><span class="key">S</span> Стол</div>
+          <div><span class="key">Space</span> Проверить</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RESULTS SCREEN ===== -->
+    <div class="screen" id="results-screen">
+      <div class="results-card">
+        <h1 id="results-title">Игра окончена!</h1>
+        <div class="final-score" id="final-score">0</div>
+        <p style="color: var(--muted);" id="results-message">Отличный результат!</p>
+        
+        <div class="results-stats">
+          <div class="results-stat">
+            <div class="results-stat-value" id="stat-level">1</div>
+            <div class="results-stat-label">Уровень</div>
+          </div>
+          <div class="results-stat">
+            <div class="results-stat-value" id="stat-rounds">0</div>
+            <div class="results-stat-label">Раундов пройдено</div>
+          </div>
+          <div class="results-stat">
+            <div class="results-stat-value" id="stat-accuracy">0%</div>
+            <div class="results-stat-label">Точность</div>
+          </div>
+        </div>
+
+        <div class="leaderboard">
+          <h3>🏆 Рейтинг игроков</h3>
+          <ul class="leaderboard-list" id="leaderboard-list"></ul>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-secondary" id="btn-new-player">👤 Сменить игрока</button>
+          <button class="btn-start" id="btn-restart">🔄 Играть снова</button>
+        </div>
+      </div>
     </div>
   </div>
-</footer>
 
-  <script src="../script.js"></script>
+  <footer class="footer" id="contact">
+    <div class="container footer__row">
+      <div>
+        <div class="logo" aria-hidden="true"><span class="bar"></span></div>
+        <div><small>© 2025 HomeFit. Онлайн‑тренировки с поддержкой и прогресс‑трекером.</small></div>
+      </div>
+      <div class="links">
+        <a href="assignments.html">Задания</a>
+        <a href="coursework.html">Курсовая</a>
+        <a href="contact.html">Связаться</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<script src="../script.js"></script>
+<script>
+// ==========================================
+// ИГРА "ОПРЕДЕЛИ ВЕС" - Game Engine
+// ==========================================
+
+(function() {
+  'use strict';
+
+  // ===== GAME CONFIGURATION =====
+  const CONFIG = {
+    levels: [
+      { 
+        id: 1, 
+        name: 'Легкий', 
+        minWeight: 1, 
+        maxWeight: 10, 
+        fallDuration: 4000, // ms
+        timeLimit: 90, // seconds
+        roundsToWin: 4,
+        pointsMultiplier: 1,
+        description: 'Числа от 1 до 10, медленное падение'
+      },
+      { 
+        id: 2, 
+        name: 'Средний', 
+        minWeight: 1, 
+        maxWeight: 25, 
+        fallDuration: 3000,
+        timeLimit: 75,
+        roundsToWin: 4,
+        pointsMultiplier: 1.5,
+        description: 'Числа от 1 до 25, среднее падение'
+      },
+      { 
+        id: 3, 
+        name: 'Сложный', 
+        minWeight: 1, 
+        maxWeight: 50, 
+        fallDuration: 2000,
+        timeLimit: 60,
+        roundsToWin: 5,
+        pointsMultiplier: 2,
+        description: 'Числа от 1 до 50, быстрое падение'
+      }
+    ],
+    tableSlots: 6,
+    balancePoints: 100,
+    perfectBalanceBonus: 50,
+    timeBonus: 0.5, // points per second remaining
+    wrongAttemptPenalty: 25,
+    missedWeightPenalty: 5,
+    storageKey: 'weightGame_leaderboard'
+  };
+
+  // ===== GAME STATE =====
+  let state = {
+    playerName: '',
+    currentLevel: 0,
+    currentRound: 0,
+    score: 0,
+    timeRemaining: 0,
+    leftPanWeights: [],
+    rightPanWeights: [],
+    tableWeights: [],
+    selectedWeight: null,
+    fallingWeight: null,
+    isPlaying: false,
+    isPaused: false,
+    roundsCompleted: 0,
+    totalAttempts: 0,
+    successfulAttempts: 0,
+    timerInterval: null,
+    fallInterval: null,
+    roundResults: [] // track each round result
+  };
+
+  // ===== DOM ELEMENTS =====
+  const elements = {
+    // Screens
+    splashScreen: document.getElementById('splash-screen'),
+    gameScreen: document.getElementById('game-screen'),
+    resultsScreen: document.getElementById('results-screen'),
+    
+    // Splash
+    playerNameInput: document.getElementById('player-name'),
+    btnStart: document.getElementById('btn-start'),
+    
+    // HUD
+    hudPlayer: document.getElementById('hud-player'),
+    hudLevel: document.getElementById('hud-level'),
+    hudRound: document.getElementById('hud-round'),
+    hudTime: document.getElementById('hud-time'),
+    hudScore: document.getElementById('hud-score'),
+    roundIndicator: document.getElementById('round-indicator'),
+    
+    // Game area
+    gameArea: document.getElementById('game-area'),
+    fallingZone: document.getElementById('falling-zone'),
+    scaleBeam: document.getElementById('scale-beam'),
+    panLeft: document.getElementById('pan-left'),
+    panRight: document.getElementById('pan-right'),
+    panLeftContainer: document.getElementById('pan-left-container'),
+    panRightContainer: document.getElementById('pan-right-container'),
+    panLeftWeights: document.getElementById('pan-left-weights'),
+    panRightWeights: document.getElementById('pan-right-weights'),
+    panLeftTotal: document.getElementById('pan-left-total'),
+    panRightTotal: document.getElementById('pan-right-total'),
+    tableSlots: document.getElementById('table-slots'),
+    btnConfirm: document.getElementById('btn-confirm'),
+    btnSkip: document.getElementById('btn-skip'),
+    timeBarFill: document.getElementById('time-bar-fill'),
+    
+    // Results
+    resultsTitle: document.getElementById('results-title'),
+    finalScore: document.getElementById('final-score'),
+    resultsMessage: document.getElementById('results-message'),
+    statLevel: document.getElementById('stat-level'),
+    statRounds: document.getElementById('stat-rounds'),
+    statAccuracy: document.getElementById('stat-accuracy'),
+    leaderboardList: document.getElementById('leaderboard-list'),
+    btnRestart: document.getElementById('btn-restart'),
+    btnNewPlayer: document.getElementById('btn-new-player'),
+    
+    // Toast
+    toast: document.getElementById('toast')
+  };
+
+  // ===== UTILITY FUNCTIONS =====
+  
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+  }
+
+  function showToast(message, type = 'info', duration = 2000) {
+    elements.toast.textContent = message;
+    elements.toast.className = 'toast ' + type;
+    elements.toast.classList.add('show');
+    setTimeout(() => {
+      elements.toast.classList.remove('show');
+    }, duration);
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : secs.toString();
+  }
+
+  // ===== STORAGE FUNCTIONS =====
+  
+  function saveToLeaderboard(playerName, score, level, rounds) {
+    let leaderboard = getLeaderboard();
+    leaderboard.push({
+      name: playerName,
+      score: score,
+      level: level,
+      rounds: rounds,
+      date: new Date().toLocaleDateString('ru-RU')
+    });
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10); // Keep top 10
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify(leaderboard));
+    return leaderboard;
+  }
+
+  function getLeaderboard() {
+    try {
+      return JSON.parse(localStorage.getItem(CONFIG.storageKey)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  // ===== SCALE PHYSICS =====
+  
+  function updateScale() {
+    const leftTotal = state.leftPanWeights.reduce((a, b) => a + b, 0);
+    const rightTotal = state.rightPanWeights.reduce((a, b) => a + b, 0);
+    
+    // Update totals display
+    elements.panLeftTotal.textContent = leftTotal;
+    elements.panRightTotal.textContent = rightTotal;
+    
+    // Calculate tilt angle (max 15 degrees)
+    const diff = leftTotal - rightTotal;
+    const maxDiff = 50;
+    const angle = Math.max(-15, Math.min(15, (diff / maxDiff) * 15));
+    
+    // Apply rotation to beam
+    elements.scaleBeam.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    
+    // Move pan containers based on tilt
+    const verticalShift = Math.sin(angle * Math.PI / 180) * 80;
+    elements.panLeftContainer.style.transform = `translateY(${verticalShift}px)`;
+    elements.panRightContainer.style.transform = `translateY(${-verticalShift}px)`;
+    
+    // Enable/disable confirm button
+    const canConfirm = leftTotal > 0 || rightTotal > 0;
+    elements.btnConfirm.disabled = !canConfirm;
+    
+    // Check if balanced
+    const isBalanced = leftTotal === rightTotal && leftTotal > 0;
+    elements.btnConfirm.style.background = isBalanced 
+      ? 'linear-gradient(90deg, var(--lime), #65a30d)' 
+      : 'linear-gradient(90deg, #6b7280, #4b5563)';
+  }
+
+  function renderPanWeights() {
+    // Left pan
+    elements.panLeftWeights.innerHTML = state.leftPanWeights
+      .map(w => `<div class="pan-weight">${w}</div>`)
+      .join('');
+    
+    // Right pan
+    elements.panRightWeights.innerHTML = state.rightPanWeights
+      .map(w => `<div class="pan-weight">${w}</div>`)
+      .join('');
+    
+    updateScale();
+  }
+
+  // ===== TABLE MANAGEMENT =====
+  
+  function initTableSlots() {
+    elements.tableSlots.innerHTML = '';
+    state.tableWeights = new Array(CONFIG.tableSlots).fill(null);
+    
+    for (let i = 0; i < CONFIG.tableSlots; i++) {
+      const slot = document.createElement('div');
+      slot.className = 'table-slot';
+      slot.dataset.index = i;
+      
+      // Click to place selected weight
+      slot.addEventListener('click', () => handleTableSlotClick(i));
+      
+      // Drag events
+      slot.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        slot.classList.add('highlight');
+      });
+      
+      slot.addEventListener('dragleave', () => {
+        slot.classList.remove('highlight');
+      });
+      
+      slot.addEventListener('drop', (e) => {
+        e.preventDefault();
+        slot.classList.remove('highlight');
+        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        if (!isNaN(fromIndex) && state.tableWeights[fromIndex] !== null) {
+          // Moving from table slot to pan is handled separately
+        }
+      });
+      
+      elements.tableSlots.appendChild(slot);
+    }
+  }
+
+  function renderTableSlots() {
+    const slots = elements.tableSlots.querySelectorAll('.table-slot');
+    slots.forEach((slot, i) => {
+      const weight = state.tableWeights[i];
+      slot.innerHTML = '';
+      slot.classList.toggle('occupied', weight !== null);
+      
+      if (weight !== null) {
+        const weightEl = document.createElement('div');
+        weightEl.className = 'table-weight';
+        weightEl.textContent = weight;
+        weightEl.draggable = true;
+        weightEl.dataset.tableIndex = i;
+        
+        // Drag start
+        weightEl.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', i);
+          weightEl.classList.add('dragging');
+          highlightPans(true);
+        });
+        
+        weightEl.addEventListener('dragend', () => {
+          weightEl.classList.remove('dragging');
+          highlightPans(false);
+        });
+        
+        // Click to select
+        weightEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectTableWeight(i);
+        });
+        
+        slot.appendChild(weightEl);
+      }
+    });
+  }
+
+  function handleTableSlotClick(index) {
+    if (state.selectedWeight !== null && state.tableWeights[index] === null) {
+      // Place selected falling weight on table
+      state.tableWeights[index] = state.selectedWeight;
+      clearFallingWeight();
+      renderTableSlots();
+      showToast(`Гирька ${state.tableWeights[index]} на столе`, 'info', 1000);
+    }
+  }
+
+  function selectTableWeight(index) {
+    const weight = state.tableWeights[index];
+    if (weight === null) return;
+    
+    // Visual feedback
+    document.querySelectorAll('.table-weight').forEach(w => w.style.boxShadow = '');
+    const weightEl = elements.tableSlots.querySelector(`[data-table-index="${index}"]`);
+    if (weightEl) {
+      weightEl.style.boxShadow = '0 0 0 3px var(--accent)';
+    }
+    
+    // Now wait for pan click
+    state.selectedTableWeightIndex = index;
+    highlightPans(true);
+    showToast('Выберите чашу весов', 'info', 1500);
+  }
+
+  function highlightPans(show) {
+    elements.panLeft.classList.toggle('highlight', show);
+    elements.panRight.classList.toggle('highlight', show);
+  }
+
+  // ===== FALLING WEIGHTS =====
+  
+  function spawnFallingWeight() {
+    if (!state.isPlaying || state.isPaused) return;
+    
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    const weight = randomInt(levelConfig.minWeight, levelConfig.maxWeight);
+    
+    // Create falling weight element
+    const weightEl = document.createElement('div');
+    weightEl.className = 'falling-weight';
+    weightEl.textContent = weight;
+    weightEl.id = 'current-falling-weight';
+    
+    state.fallingWeight = weight;
+    state.selectedWeight = null;
+    
+    // Click to select
+    weightEl.addEventListener('click', () => {
+      if (state.selectedWeight === weight) {
+        state.selectedWeight = null;
+        weightEl.classList.remove('selected');
+        highlightPans(false);
+        elements.tableSlots.querySelectorAll('.table-slot:not(.occupied)').forEach(s => s.classList.remove('highlight'));
+      } else {
+        state.selectedWeight = weight;
+        weightEl.classList.add('selected');
+        highlightPans(true);
+        elements.tableSlots.querySelectorAll('.table-slot:not(.occupied)').forEach(s => s.classList.add('highlight'));
+      }
+    });
+    
+    // Double click for quick left pan
+    weightEl.addEventListener('dblclick', () => {
+      placeWeightOnPan('left', weight);
+      clearFallingWeight();
+    });
+    
+    // Hover effect
+    weightEl.addEventListener('mouseenter', () => {
+      weightEl.style.transform = 'translateX(-50%) scale(1.1)';
+    });
+    
+    weightEl.addEventListener('mouseleave', () => {
+      if (!weightEl.classList.contains('selected')) {
+        weightEl.style.transform = 'translateX(-50%) scale(1)';
+      }
+    });
+    
+    elements.fallingZone.appendChild(weightEl);
+    
+    // Animate falling
+    weightEl.style.animation = `fall ${levelConfig.fallDuration}ms linear forwards`;
+    
+    // Set timeout for weight to disappear
+    state.fallTimeout = setTimeout(() => {
+      if (state.fallingWeight === weight) {
+        // Weight was ignored - penalty
+        state.score = Math.max(0, state.score - CONFIG.missedWeightPenalty * levelConfig.pointsMultiplier);
+        updateHUD();
+        flyAwayWeight(weightEl);
+        setTimeout(() => spawnFallingWeight(), 500);
+      }
+    }, levelConfig.fallDuration);
+  }
+
+  function flyAwayWeight(weightEl) {
+    if (!weightEl) return;
+    weightEl.style.animation = 'flyAway 0.5s ease forwards';
+    setTimeout(() => weightEl.remove(), 500);
+    state.fallingWeight = null;
+    state.selectedWeight = null;
+  }
+
+  function clearFallingWeight() {
+    clearTimeout(state.fallTimeout);
+    const weightEl = document.getElementById('current-falling-weight');
+    if (weightEl) weightEl.remove();
+    state.fallingWeight = null;
+    state.selectedWeight = null;
+    highlightPans(false);
+    elements.tableSlots.querySelectorAll('.table-slot').forEach(s => s.classList.remove('highlight'));
+    
+    // Spawn next weight after short delay
+    setTimeout(() => spawnFallingWeight(), 800);
+  }
+
+  function placeWeightOnPan(side, weight) {
+    if (side === 'left') {
+      state.leftPanWeights.push(weight);
+    } else {
+      state.rightPanWeights.push(weight);
+    }
+    renderPanWeights();
+    showToast(`+${weight} на ${side === 'left' ? 'левую' : 'правую'} чашу`, 'success', 800);
+  }
+
+  // ===== GAME LOGIC =====
+  
+  function startGame() {
+    const name = elements.playerNameInput.value.trim() || 'Игрок';
+    state.playerName = name;
+    state.currentLevel = 0;
+    state.score = 0;
+    state.roundsCompleted = 0;
+    state.totalAttempts = 0;
+    state.successfulAttempts = 0;
+    
+    showScreen('game-screen');
+    startLevel();
+  }
+
+  function startLevel() {
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    
+    state.currentRound = 0;
+    state.roundResults = [];
+    state.timeRemaining = levelConfig.timeLimit;
+    state.leftPanWeights = [];
+    state.rightPanWeights = [];
+    state.isPlaying = true;
+    state.isPaused = false;
+    
+    initTableSlots();
+    renderPanWeights();
+    renderTableSlots();
+    updateHUD();
+    renderRoundIndicator();
+    
+    showToast(`Уровень ${levelConfig.id}: ${levelConfig.name}`, 'info', 2000);
+    
+    // Start timer
+    startTimer();
+    
+    // Start spawning weights after a short delay
+    setTimeout(() => spawnFallingWeight(), 1000);
+  }
+
+  function startTimer() {
+    clearInterval(state.timerInterval);
+    state.timerInterval = setInterval(() => {
+      if (!state.isPlaying || state.isPaused) return;
+      
+      state.timeRemaining--;
+      updateHUD();
+      
+      if (state.timeRemaining <= 0) {
+        endGame('time');
+      }
+    }, 1000);
+  }
+
+  function updateHUD() {
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    
+    elements.hudPlayer.textContent = state.playerName;
+    elements.hudLevel.textContent = levelConfig.id;
+    elements.hudRound.textContent = `${state.currentRound + 1}/${levelConfig.roundsToWin}`;
+    elements.hudScore.textContent = Math.round(state.score);
+    
+    // Time display with colors
+    elements.hudTime.textContent = formatTime(state.timeRemaining);
+    elements.hudTime.classList.remove('warning', 'danger');
+    if (state.timeRemaining <= 10) {
+      elements.hudTime.classList.add('danger');
+    } else if (state.timeRemaining <= 20) {
+      elements.hudTime.classList.add('warning');
+    }
+    
+    // Time bar
+    const percentage = (state.timeRemaining / levelConfig.timeLimit) * 100;
+    elements.timeBarFill.style.width = percentage + '%';
+    elements.timeBarFill.classList.remove('warning', 'danger');
+    if (percentage <= 15) {
+      elements.timeBarFill.classList.add('danger');
+    } else if (percentage <= 30) {
+      elements.timeBarFill.classList.add('warning');
+    }
+  }
+
+  function renderRoundIndicator() {
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    elements.roundIndicator.innerHTML = '';
+    
+    for (let i = 0; i < levelConfig.roundsToWin; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'round-dot';
+      
+      if (i < state.roundResults.length) {
+        dot.classList.add(state.roundResults[i] ? 'completed' : 'failed');
+      } else if (i === state.currentRound) {
+        dot.classList.add('current');
+      }
+      
+      elements.roundIndicator.appendChild(dot);
+    }
+  }
+
+  function checkBalance() {
+    const leftTotal = state.leftPanWeights.reduce((a, b) => a + b, 0);
+    const rightTotal = state.rightPanWeights.reduce((a, b) => a + b, 0);
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    
+    state.totalAttempts++;
+    
+    if (leftTotal === rightTotal && leftTotal > 0) {
+      // Success!
+      state.successfulAttempts++;
+      
+      // Calculate points
+      let points = CONFIG.balancePoints * levelConfig.pointsMultiplier;
+      
+      // Perfect balance bonus (using more weights)
+      const totalWeights = state.leftPanWeights.length + state.rightPanWeights.length;
+      if (totalWeights >= 4) {
+        points += CONFIG.perfectBalanceBonus;
+        showToast('🎯 Отлично! Бонус за сложный баланс!', 'success', 2000);
+      }
+      
+      // Time bonus
+      const timeBonus = Math.round(state.timeRemaining * CONFIG.timeBonus * levelConfig.pointsMultiplier);
+      points += timeBonus;
+      
+      state.score += points;
+      state.roundResults.push(true);
+      state.roundsCompleted++;
+      
+      showRoundResult(true, points);
+    } else {
+      // Failure
+      const penalty = CONFIG.wrongAttemptPenalty * levelConfig.pointsMultiplier;
+      state.score = Math.max(0, state.score - penalty);
+      state.roundResults.push(false);
+      
+      // Shake animation
+      elements.scaleBeam.classList.add('shake');
+      setTimeout(() => elements.scaleBeam.classList.remove('shake'), 300);
+      
+      showRoundResult(false, -penalty);
+    }
+    
+    updateHUD();
+    renderRoundIndicator();
+  }
+
+  function showRoundResult(success, points) {
+    state.isPaused = true;
+    
+    // Clear falling weight
+    clearTimeout(state.fallTimeout);
+    const weightEl = document.getElementById('current-falling-weight');
+    if (weightEl) weightEl.remove();
+    
+    // Create message overlay
+    const message = document.createElement('div');
+    message.className = 'game-message ' + (success ? 'success' : 'failure');
+    message.innerHTML = `
+      <h2>${success ? '✓ Баланс!' : '✗ Не сбалансировано!'}</h2>
+      <p>${success ? 'Весы уравновешены!' : 'Попробуйте ещё раз!'}</p>
+      <div class="points ${points < 0 ? 'negative' : ''}">${points > 0 ? '+' : ''}${Math.round(points)} очков</div>
+    `;
+    elements.gameArea.appendChild(message);
+    
+    setTimeout(() => {
+      message.remove();
+      proceedToNextRound();
+    }, 1500);
+  }
+
+  function proceedToNextRound() {
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    
+    // Check if level is complete
+    const successfulRounds = state.roundResults.filter(r => r).length;
+    
+    if (successfulRounds >= levelConfig.roundsToWin) {
+      // Level complete!
+      showLevelComplete();
+    } else if (state.roundResults.length >= levelConfig.roundsToWin + 2) {
+      // Too many failures
+      endGame('failed');
+    } else {
+      // Continue to next round
+      state.currentRound++;
+      state.leftPanWeights = [];
+      state.rightPanWeights = [];
+      state.tableWeights = new Array(CONFIG.tableSlots).fill(null);
+      state.isPaused = false;
+      
+      renderPanWeights();
+      renderTableSlots();
+      renderRoundIndicator();
+      updateHUD();
+      
+      setTimeout(() => spawnFallingWeight(), 500);
+    }
+  }
+
+  function showLevelComplete() {
+    state.isPaused = true;
+    const levelConfig = CONFIG.levels[state.currentLevel];
+    
+    // Level completion bonus
+    const levelBonus = 200 * levelConfig.pointsMultiplier;
+    state.score += levelBonus;
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'level-overlay';
+    overlay.innerHTML = `
+      <div class="level-card">
+        <h2>🎉 Уровень ${levelConfig.id} пройден!</h2>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">+${Math.round(levelBonus)}</div>
+            <div class="stat-label">Бонус за уровень</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">${Math.round(state.score)}</div>
+            <div class="stat-label">Всего очков</div>
+          </div>
+        </div>
+        ${state.currentLevel < CONFIG.levels.length - 1 
+          ? `<p style="color: var(--muted);">Следующий: ${CONFIG.levels[state.currentLevel + 1].description}</p>
+             <button class="btn-start" id="btn-next-level">▶ Следующий уровень</button>`
+          : `<p style="color: var(--lime);">Вы прошли все уровни!</p>
+             <button class="btn-start" id="btn-finish-game">🏆 Завершить игру</button>`
+        }
+      </div>
+    `;
+    
+    elements.gameArea.appendChild(overlay);
+    
+    if (state.currentLevel < CONFIG.levels.length - 1) {
+      document.getElementById('btn-next-level').addEventListener('click', () => {
+        overlay.remove();
+        state.currentLevel++;
+        startLevel();
+      });
+    } else {
+      document.getElementById('btn-finish-game').addEventListener('click', () => {
+        overlay.remove();
+        endGame('complete');
+      });
+    }
+  }
+
+  function skipLevel() {
+    if (confirm('Вы уверены, что хотите пропустить уровень? Текущий прогресс будет потерян.')) {
+      endGame('skipped');
+    }
+  }
+
+  function endGame(reason) {
+    state.isPlaying = false;
+    clearInterval(state.timerInterval);
+    clearTimeout(state.fallTimeout);
+    
+    // Save to leaderboard
+    const leaderboard = saveToLeaderboard(
+      state.playerName, 
+      Math.round(state.score), 
+      state.currentLevel + 1,
+      state.roundsCompleted
+    );
+    
+    // Update results screen
+    let title, message;
+    switch (reason) {
+      case 'complete':
+        title = '🏆 Победа!';
+        message = 'Вы прошли все уровни! Великолепно!';
+        elements.resultsTitle.className = 'win';
+        break;
+      case 'time':
+        title = '⏰ Время вышло!';
+        message = 'Попробуйте ещё раз!';
+        elements.resultsTitle.className = 'lose';
+        break;
+      case 'failed':
+        title = '❌ Игра окончена';
+        message = 'Слишком много ошибок. Попробуйте снова!';
+        elements.resultsTitle.className = 'lose';
+        break;
+      case 'skipped':
+        title = '⏭️ Уровень пропущен';
+        message = 'Вы завершили игру досрочно.';
+        elements.resultsTitle.className = '';
+        break;
+      default:
+        title = 'Игра окончена';
+        message = '';
+    }
+    
+    elements.resultsTitle.textContent = title;
+    elements.resultsMessage.textContent = message;
+    elements.finalScore.textContent = Math.round(state.score);
+    elements.statLevel.textContent = state.currentLevel + 1;
+    elements.statRounds.textContent = state.roundsCompleted;
+    elements.statAccuracy.textContent = state.totalAttempts > 0 
+      ? Math.round((state.successfulAttempts / state.totalAttempts) * 100) + '%'
+      : '—';
+    
+    // Render leaderboard
+    renderLeaderboard(leaderboard);
+    
+    showScreen('results-screen');
+  }
+
+  function renderLeaderboard(leaderboard) {
+    elements.leaderboardList.innerHTML = leaderboard.map((entry, index) => {
+      const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+      const isCurrent = entry.name === state.playerName && entry.score === Math.round(state.score);
+      
+      return `
+        <li class="leaderboard-item ${isCurrent ? 'current' : ''}">
+          <span class="leaderboard-rank ${rankClass}">${index + 1}</span>
+          <span class="leaderboard-name">${entry.name}</span>
+          <span class="leaderboard-score">${entry.score}</span>
+          <span class="leaderboard-date">${entry.date}</span>
+        </li>
+      `;
+    }).join('');
+    
+    if (leaderboard.length === 0) {
+      elements.leaderboardList.innerHTML = '<li class="leaderboard-item"><span style="color: var(--muted);">Рейтинг пуст</span></li>';
+    }
+  }
+
+  function restartGame() {
+    showScreen('game-screen');
+    state.currentLevel = 0;
+    state.score = 0;
+    state.roundsCompleted = 0;
+    state.totalAttempts = 0;
+    state.successfulAttempts = 0;
+    startLevel();
+  }
+
+  function newPlayer() {
+    showScreen('splash-screen');
+    elements.playerNameInput.value = '';
+    elements.playerNameInput.focus();
+  }
+
+  // ===== EVENT HANDLERS =====
+  
+  function handlePanClick(side) {
+    // Check if we have a selected falling weight
+    if (state.selectedWeight !== null) {
+      placeWeightOnPan(side, state.selectedWeight);
+      clearFallingWeight();
+      return;
+    }
+    
+    // Check if we have a selected table weight
+    if (state.selectedTableWeightIndex !== undefined) {
+      const weight = state.tableWeights[state.selectedTableWeightIndex];
+      if (weight !== null) {
+        placeWeightOnPan(side, weight);
+        state.tableWeights[state.selectedTableWeightIndex] = null;
+        state.selectedTableWeightIndex = undefined;
+        renderTableSlots();
+        highlightPans(false);
+        document.querySelectorAll('.table-weight').forEach(w => w.style.boxShadow = '');
+      }
+    }
+  }
+
+  function handleKeydown(e) {
+    if (!state.isPlaying || state.isPaused) return;
+    
+    switch (e.key.toLowerCase()) {
+      case 'a':
+        // Left pan
+        if (state.selectedWeight !== null) {
+          placeWeightOnPan('left', state.selectedWeight);
+          clearFallingWeight();
+        } else if (state.selectedTableWeightIndex !== undefined) {
+          handlePanClick('left');
+        }
+        break;
+        
+      case 'd':
+        // Right pan
+        if (state.selectedWeight !== null) {
+          placeWeightOnPan('right', state.selectedWeight);
+          clearFallingWeight();
+        } else if (state.selectedTableWeightIndex !== undefined) {
+          handlePanClick('right');
+        }
+        break;
+        
+      case 's':
+        // Table
+        if (state.selectedWeight !== null) {
+          const emptySlot = state.tableWeights.findIndex(w => w === null);
+          if (emptySlot !== -1) {
+            state.tableWeights[emptySlot] = state.selectedWeight;
+            clearFallingWeight();
+            renderTableSlots();
+            showToast(`Гирька ${state.tableWeights[emptySlot]} на столе`, 'info', 1000);
+          } else {
+            showToast('Стол заполнен!', 'error', 1500);
+          }
+        }
+        break;
+        
+      case ' ':
+        e.preventDefault();
+        if (!elements.btnConfirm.disabled) {
+          checkBalance();
+        }
+        break;
+    }
+  }
+
+  // ===== PAN DRAG AND DROP =====
+  
+  function setupPanDropZones() {
+    [elements.panLeft, elements.panRight].forEach(pan => {
+      pan.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        pan.classList.add('highlight');
+      });
+      
+      pan.addEventListener('dragleave', () => {
+        pan.classList.remove('highlight');
+      });
+      
+      pan.addEventListener('drop', (e) => {
+        e.preventDefault();
+        pan.classList.remove('highlight');
+        
+        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        if (!isNaN(fromIndex) && state.tableWeights[fromIndex] !== null) {
+          const weight = state.tableWeights[fromIndex];
+          const side = pan.dataset.side;
+          
+          placeWeightOnPan(side, weight);
+          state.tableWeights[fromIndex] = null;
+          renderTableSlots();
+        }
+      });
+      
+      // Click handler
+      pan.addEventListener('click', () => {
+        handlePanClick(pan.dataset.side);
+      });
+    });
+  }
+
+  // ===== INITIALIZATION =====
+  
+  function init() {
+    // Button event listeners
+    elements.btnStart.addEventListener('click', startGame);
+    elements.btnConfirm.addEventListener('click', checkBalance);
+    elements.btnSkip.addEventListener('click', skipLevel);
+    elements.btnRestart.addEventListener('click', restartGame);
+    elements.btnNewPlayer.addEventListener('click', newPlayer);
+    
+    // Enable start button when name is entered
+    elements.playerNameInput.addEventListener('input', () => {
+      elements.btnStart.disabled = false;
+    });
+    
+    // Enter key to start
+    elements.playerNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        startGame();
+      }
+    });
+    
+    // Keyboard controls
+    document.addEventListener('keydown', handleKeydown);
+    
+    // Setup pan drop zones
+    setupPanDropZones();
+    
+    // Show splash screen
+    showScreen('splash-screen');
+    elements.playerNameInput.focus();
+    
+    // Load and display initial leaderboard preview
+    const leaderboard = getLeaderboard();
+    if (leaderboard.length > 0) {
+      const topPlayer = leaderboard[0];
+      showToast(`🏆 Лучший результат: ${topPlayer.name} — ${topPlayer.score}`, 'info', 3000);
+    }
+  }
+
+  // Start when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
 </body>
 </html>
