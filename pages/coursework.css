@@ -1,6 +1,207 @@
-/* Игра "Определи вес" - Стили */
+/* Игра "Определи вес" */
 
-* { touch-action: manipulation; }
+/* === Базовые переменные === */
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #22d3ee;
+  --lime: #84cc16;
+  --border: #1f2937;
+  --maxw: 1200px;
+}
+
+* {
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  background: radial-gradient(1200px 600px at 70% -10%, #10203a 0%, var(--bg) 60%);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding: 0 16px;
+}
+
+/* === Шапка === */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(15, 23, 42, .75);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.logo {
+  --size: 80px;
+  width: var(--size);
+  height: 30px;
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+}
+
+.logo .bar {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  height: 10px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--lime), var(--accent));
+  border-radius: 999px;
+  box-shadow: 0 0 20px rgba(34, 211, 238, .35);
+}
+
+.logo::before,
+.logo::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff6, #0000), #0b1325;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 2px #0a162b inset, 0 0 14px rgba(34, 211, 238, .35);
+}
+
+.logo::before { left: -6px; }
+.logo::after { right: -6px; }
+
+/* === Навигация === */
+.nav {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+.nav a:hover { background: rgba(255, 255, 255, .06); }
+
+.nav .cta {
+  background: linear-gradient(90deg, var(--accent), var(--lime));
+  color: #04121d;
+}
+
+.nav .cta:hover { transform: translateY(-1px); }
+
+/* === Бургер-меню === */
+.burger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0e1527;
+  cursor: pointer;
+}
+
+.burger span,
+.burger::before,
+.burger::after {
+  content: "";
+  display: block;
+  height: 2px;
+  width: 20px;
+  background: var(--text);
+  border-radius: 2px;
+}
+
+.burger span { transform: translateY(0); }
+.burger::before { transform: translateY(-6px); }
+.burger::after { transform: translateY(6px); }
+
+@media (max-width: 860px) {
+  .burger { display: flex; }
+  
+  .nav {
+    position: fixed;
+    right: 16px;
+    top: 68px;
+    background: #0c1324;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 12px;
+    width: min(92vw, 360px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
+    transform-origin: top right;
+    transform: scale(.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: .2s;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nav--open {
+    transform: scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .nav a { padding: 12px 14px; }
+}
+
+/* === Подвал === */
+.footer {
+  border-top: 1px solid var(--border);
+  background: #0c1324;
+  color: var(--muted);
+}
+
+.footer__row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr;
+  padding: 18px 10px;
+}
+
+.footer .links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.footer a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.footer small { color: #8a93a6; }
+
+/* === Игра === */
 
 .game-wrapper {
   min-height: 100vh;

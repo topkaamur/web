@@ -3,6 +3,16 @@
  * Уравновешивай весы, ловя падающие гирьки
  */
 
+// Мобильное меню
+(function() {
+  const burger = document.getElementById('burger');
+  const nav = document.getElementById('nav');
+  if (burger && nav) {
+    burger.addEventListener('click', () => nav.classList.toggle('nav--open'));
+  }
+})();
+
+// Игра
 (function() {
   'use strict';
 
